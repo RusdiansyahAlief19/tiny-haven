@@ -111,8 +111,8 @@ func apply_settings() -> void:
 	RenderingServer.positional_soft_shadow_filter_set_quality(SHADOW_FILTER[shadow_quality])
 	get_viewport().msaa_3d = MSAA_VALUES[msaa]
 
-	# Mode jendela dan VSync tidak berlaku saat dijalankan tanpa layar (headless).
-	if DisplayServer.get_name() == "headless":
+	# Mode jendela dan VSync tidak berlaku tanpa layar (headless) atau di browser.
+	if DisplayServer.get_name() == "headless" or OS.has_feature("web"):
 		return
 	DisplayServer.window_set_vsync_mode(
 		DisplayServer.VSYNC_ENABLED if vsync else DisplayServer.VSYNC_DISABLED)

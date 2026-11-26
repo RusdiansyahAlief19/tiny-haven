@@ -1,0 +1,67 @@
+name: Build dan rilis
+
+# Membuat file game siap main (Windows .exe dan versi web) lalu
+# melampirkannya ke halaman Releases. Berjalan otomatis setiap ada tag
+# versi baru (misalnya v0.6), atau manual lewat tab Actions.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag rilis yang mau diberi file build (misalnya v0.5.1)"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  GODOT_VERSION: 4.7.2
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Ambil kode versi ${{ env.TAG }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          lfs: true
+
+      - name: Pasang Godot dan export template
+        run: |
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          wget -q "$base/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -O godot.zip
+          unzip -q godot.zip && mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot && chmod +x godot
+          wget -q "$base/Godot_v${GODOT_VERSION}-stable_export_templates.tpz" -O templates.tpz
+          dir="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$dir"
+          unzip -q templates.tpz -d tpl && mv tpl/templates/* "$dir/"
+
+      - name: Impor aset
+        run: ./godot --headless --path . --import
+
+      - name: Export Windows dan Web
+        run: |
+          mkdir -p build/windows build/web
+          ./godot --headless --path . --export-release "Windows Desktop" build/windows/TinyHaven.exe
+          ./godot --headless --path . --export-release "Web" build/web/index.html
+          test -f build/windows/TinyHaven.exe
+          test -f build/web/index.html
+
+      - name: Bungkus jadi zip
+        run: |
+          cd build/windows && zip -q -r "../TinyHaven-${TAG}-windows.zip" . && cd ../..
+          cd build/web && zip -q -r "../TinyHaven-${TAG}-web.zip" . && cd ../..
+          ls -lh build/*.zip
+
+      - name: Lampirkan ke halaman Releases
+        run: |
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "$TAG" --notes "Build otomatis untuk $TAG."
+          fi
+          gh release upload "$TAG" build/*.zip --clobber

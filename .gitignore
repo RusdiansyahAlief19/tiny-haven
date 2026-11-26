@@ -3,7 +3,6 @@
 *.translation
 
 # Export
-export_presets.cfg
 /build/
 /export/
 /android/
@@ -17,3 +16,5 @@ Thumbs.db
 .vscode/
 .idea/
 .agents/
+# Hasil build (dibuat oleh GitHub Actions, tidak di-commit)
+/build/

@@ -53,6 +53,11 @@ var _sky: ShaderMaterial
 var _ground: StandardMaterial3D
 var _lights_on := true
 
+## Renderer Compatibility (dipakai versi web) menghitung cahaya lebih terang
+## daripada Forward+, jadi semua energi cahaya dikali faktor ini.
+static func light_scale() -> float:
+	return 0.6 if RenderingServer.get_current_rendering_method() == "gl_compatibility" else 1.0
+
 func setup(light: DirectionalLight3D, env: Environment, sky: ShaderMaterial, ground: StandardMaterial3D = null) -> void:
 	_light = light
 	_env = env
@@ -102,7 +107,7 @@ func _update(force: bool) -> void:
 	var body_color := MOON_COLOR.lerp(SUN_COLOR, daylight).lerp(DUSK_COLOR, dusk * 0.6)
 	var cloud_dim := 1.0 - overcast * 0.55
 	_light.light_color = body_color
-	_light.light_energy = lerpf(0.7, 1.1, daylight) * lerpf(0.35, 1.0, 1.0 - dusk * 0.7) * cloud_dim
+	_light.light_energy = lerpf(0.7, 1.1, daylight) * lerpf(0.35, 1.0, 1.0 - dusk * 0.7) * cloud_dim * light_scale()
 
 	var grey := Color(0.45, 0.47, 0.55)
 	var top := NIGHT_TOP.lerp(DAY_TOP, daylight).lerp(grey * 0.6, overcast * 0.6)
@@ -113,7 +118,7 @@ func _update(force: bool) -> void:
 	_sky.set_shader_parameter("night_factor", darkness)
 	_sky.set_shader_parameter("cloud_cover", overcast)
 
-	_env.ambient_light_energy = lerpf(0.85, 0.22, daylight) * cloud_dim
+	_env.ambient_light_energy = lerpf(0.85, 0.22, daylight) * cloud_dim * light_scale()
 	if _ground:
 		_ground.albedo_color = NIGHT_GRASS.lerp(DAY_GRASS, daylight)
 	_env.fog_light_color = NIGHT_FOG.lerp(DAY_FOG, daylight).lerp(grey, overcast * 0.5)

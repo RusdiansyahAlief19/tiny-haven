@@ -89,7 +89,9 @@ func _add_menu() -> void:
 	_column.add_child(continue_button)
 	_column.add_child(_menu_button("Pengaturan", _open_settings))
 	_column.add_child(_menu_button("Kredit", _open_credits))
-	_column.add_child(_menu_button("Keluar", _on_quit_pressed))
+	# Di browser game tidak bisa menutup dirinya sendiri, jadi tombol Keluar disembunyikan.
+	if not OS.has_feature("web"):
+		_column.add_child(_menu_button("Keluar", _on_quit_pressed))
 
 ## Papan judul: pelat gelap bergaris merah muda, judul dan subjudul di dalamnya.
 func _title_banner() -> Control:

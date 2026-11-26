@@ -248,7 +248,7 @@ func _decorate_campfire(node: Node3D) -> void:
 	var light := FlickerLight.new()
 	light.position = Vector3(0.0, 0.6, 0.0)
 	light.light_color = FIRE_WARM
-	light.base_energy = 2.6
+	light.base_energy = 2.6 * DayNightCycle.light_scale()
 	light.omni_range = 7.5
 	light.shadow_enabled = true
 	light.set_meta("night_only", true)
@@ -311,7 +311,7 @@ func _build_lantern() -> Node3D:
 	var light := OmniLight3D.new()
 	light.position = Vector3(0.0, 0.62, 0.0)
 	light.light_color = LANTERN_WARM
-	light.light_energy = 1.4
+	light.light_energy = 1.4 * DayNightCycle.light_scale()
 	light.omni_range = 4.0
 	light.omni_attenuation = 1.4
 	light.set_meta("night_only", true)
