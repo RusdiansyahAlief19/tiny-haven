@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ddayyt4wry7d3"]
 
 [ext_resource type="PackedScene" uid="uid://ba4rlivryie8t" path="res://assets/model/nature/campfire_logs.glb" id="1_8ekit"]
-[ext_resource type="Script" uid="uid://dr047ufhgu58b" path="res://menu_world.gd" id="1_877pj"]
+[ext_resource type="Script" uid="uid://dr047ufhgu58b" path="res://scripts/world/menu_world.gd" id="1_877pj"]
 [ext_resource type="PackedScene" uid="uid://mo87lb7m20di" path="res://assets/model/nature/tent_detailedOpen.glb" id="2_n4uci"]
 [ext_resource type="PackedScene" uid="uid://dr201o5vee8jl" path="res://assets/model/nature/tree_oak.glb" id="3_877pj"]
 [ext_resource type="PackedScene" uid="uid://cdvi2qsh2444k" path="res://assets/model/nature/tree_tall.glb" id="4_ayp64"]
@@ -14,7 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://cb6w52q3d6f36" path="res://assets/model/nature/rock_smallA.glb" id="11_e0hcc"]
 [ext_resource type="PackedScene" uid="uid://bv2yl1j1nmjm7" path="res://assets/model/nature/mushroom_redGroup.glb" id="12_qch7b"]
 [ext_resource type="PackedScene" uid="uid://c1qfy0yvihe6d" path="res://assets/model/nature/flower_redA.glb" id="13_4ovp2"]
-[ext_resource type="Script" uid="uid://8x3ululysi8u" path="res://menu_ui.gd" id="15_ayp64"]
+[ext_resource type="Script" uid="uid://8x3ululysi8u" path="res://scripts/ui/menu_ui.gd" id="15_ayp64"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eyyjy"]
 albedo_color = Color(0.09019608, 0.5647059, 0.43529412, 1)

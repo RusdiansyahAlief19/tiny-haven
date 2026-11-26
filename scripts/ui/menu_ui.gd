@@ -4,7 +4,7 @@ extends CanvasLayer
 ## Tata letaknya mengikuti gaya Stormy Knights: papan judul di atas tengah,
 ## lalu deretan tombol pelat selebar papan di bawahnya.
 ##
-## Font dan gaya pelat diambil dari scripts/ui_theme.gd supaya sama
+## Font dan gaya pelat diambil dari scripts/ui/ui_theme.gd supaya sama
 ## dengan HUD di dalam permainan:
 ##   judul      - Magic Light, dibiarkan halus karena hurufnya berlekuk
 ##   sisanya    - Minecraft, penghalusan tepi dimatikan supaya pikselnya tajam
@@ -13,7 +13,7 @@ extends CanvasLayer
 ## Iterasi 4: semua tombol sudah berfungsi.
 ##   Mulai       - dunia baru di scenes/world/main.tscn
 ##   Lanjutkan   - memuat dunia tersimpan (redup kalau belum ada simpanan)
-##   Pengaturan  - jendela pengaturan grafis (scripts/settings_panel.gd)
+##   Pengaturan  - jendela pengaturan grafis (scripts/ui/settings_panel.gd)
 ##   Kredit      - daftar tim dan aset
 ##   Keluar      - menutup game
 ##

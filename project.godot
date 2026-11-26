@@ -18,4 +18,4 @@ config/icon="res://assets/icon/icon-game.png"
 
 [autoload]
 
-GameState="*res://scripts/game_state.gd"
+GameState="*res://scripts/core/game_state.gd"

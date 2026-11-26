@@ -8,6 +8,8 @@ extends Node
 
 const SETTINGS_PATH := "user://settings.cfg"
 const SAVE_PATH := "user://tiny_haven_world.json"
+## Bisa diganti oleh skrip tes supaya simpanan pemain tidak tertimpa.
+var save_path := SAVE_PATH
 const SAVE_VERSION := 1
 
 const MENU_SCENE := "res://scenes/ui/main_menu.tscn"
@@ -116,12 +118,12 @@ func set_and_apply(key: String, value: Variant) -> void:
 # --- Simpan dunia -----------------------------------------------------------
 
 func has_save() -> bool:
-	return FileAccess.file_exists(SAVE_PATH)
+	return FileAccess.file_exists(save_path)
 
 func save_world(data: Dictionary) -> bool:
 	data["version"] = SAVE_VERSION
 	data["saved_at"] = Time.get_datetime_string_from_system()
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var file := FileAccess.open(save_path, FileAccess.WRITE)
 	if file == null:
 		push_warning("Gagal menyimpan dunia: %s" % error_string(FileAccess.get_open_error()))
 		return false
@@ -132,7 +134,7 @@ func save_world(data: Dictionary) -> bool:
 func load_world() -> Dictionary:
 	if not has_save():
 		return {}
-	var text := FileAccess.get_file_as_string(SAVE_PATH)
+	var text := FileAccess.get_file_as_string(save_path)
 	var parsed: Variant = JSON.parse_string(text)
 	if parsed is Dictionary:
 		return parsed

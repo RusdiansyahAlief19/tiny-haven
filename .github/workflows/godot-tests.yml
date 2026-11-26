@@ -1,0 +1,37 @@
+name: Tes Godot
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: 4.7.2
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Ambil kode (termasuk aset LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Pasang Godot ${{ env.GODOT_VERSION }}
+        run: |
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -O godot.zip
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+          chmod +x godot
+          ./godot --version
+
+      - name: Impor aset
+        run: ./godot --headless --path . --import
+
+      - name: Tes simpan dan muat dunia
+        run: ./godot --headless --path . --quit-after 1200 -s res://tests/save_load_test.gd
+
+      - name: Tes alur menu dan pengaturan
+        run: ./godot --headless --path . --quit-after 1200 -s res://tests/ui_flow_test.gd

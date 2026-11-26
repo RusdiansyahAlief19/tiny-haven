@@ -5,15 +5,15 @@ extends Node3D
 ## Suasananya disamakan dengan menu: malam ungu, bulan sabit, kunang-kunang,
 ## dan cahaya hangat dari api unggun serta lentera yang ditaruh pemain.
 ##
-## Kontrol lengkap tampil di HUD (scripts/game_hud.gd). Ringkasnya:
+## Kontrol lengkap tampil di HUD (scripts/ui/game_hud.gd). Ringkasnya:
 ##   1-9 pilih alat | Klik kiri taruh | Klik kanan selesai tembok / putar
 ##   R putar | Z undo | Shift kunci grid | F5 simpan | Esc jeda
 ##   Klik tengah + geser putar kamera | Scroll zoom | WASD/Panah geser kamera
 
-const CameraRigScript = preload("res://scripts/camera_rig.gd")
-const WallBuilderScript = preload("res://scripts/wall_builder.gd")
-const SheepScript = preload("res://scripts/sheep.gd")
-const FirefliesScript = preload("res://scripts/fireflies.gd")
+const CameraRigScript = preload("res://scripts/world/camera_rig.gd")
+const WallBuilderScript = preload("res://scripts/world/wall_builder.gd")
+const SheepScript = preload("res://scripts/world/sheep.gd")
+const FirefliesScript = preload("res://scripts/world/fireflies.gd")
 const NightSkyShader = preload("res://shaders/night_sky.gdshader")
 
 ## Urutan alat = urutan tombol di toolbar dan tombol angka 1-9.

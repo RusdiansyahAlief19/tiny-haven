@@ -12,7 +12,7 @@ extends Node3D
 ##
 ## Pasang pada node Node3D paling atas di scenes/ui/main_menu.tscn.
 
-const FirefliesScript := preload("res://scripts/fireflies.gd")
+const FirefliesScript := preload("res://scripts/world/fireflies.gd")
 
 const NATURE_DIR := "res://assets/model/nature/"
 const TREES: Array[String] = [
