@@ -21,7 +21,7 @@ extends CanvasLayer
 
 const TITLE := "TINY HAVEN"
 const SUBTITLE := "A COZY MINIATURE WORLD BUILDER"
-const VERSION_TEXT := "Iterasi 4 - Prototipe"
+const VERSION_TEXT := "Iterasi 5 - Prototipe"
 
 const CREDITS_TEAM: Array[String] = [
 	"Rusdiansyah Alief Prasetya",

@@ -55,6 +55,8 @@ var _ghost_scale: float = 1.0
 var _erase_marker: MeshInstance3D
 var _rng := RandomNumberGenerator.new()
 var _scene_cache: Dictionary = {}
+## Iterasi 5: lentera dan api unggun hanya menyala saat gelap (diatur DayNightCycle).
+var lights_on := true
 
 func _ready() -> void:
 	_rng.randomize()
@@ -138,6 +140,7 @@ func place_record(record: Dictionary) -> Node3D:
 	node.set_meta("record", record)
 	add_child(node)
 	_placed.append(node)
+	_apply_night(node, lights_on)
 	return node
 
 ## Hapus objek terdekat dari titik klik (hanya bidang XZ yang dihitung).
@@ -161,6 +164,31 @@ func undo_last() -> bool:
 	var node: Node3D = _placed.pop_back()
 	node.queue_free()
 	return true
+
+## Nyalakan atau padamkan semua lentera dan api unggun.
+func set_lights(on: bool) -> void:
+	lights_on = on
+	for node in _placed:
+		_apply_night(node, on)
+
+func _apply_night(node: Node, on: bool) -> void:
+	for child in node.find_children("*", "", true, false):
+		if child.has_meta("night_only"):
+			if child is Light3D:
+				child.visible = on
+			elif child is CPUParticles3D:
+				child.emitting = on
+		if child.has_meta("night_glow"):
+			var mat: StandardMaterial3D = child.get_meta("night_glow")
+			mat.emission_energy_multiplier = 2.5 if on else 0.15
+
+## Posisi semua objek dengan alat tertentu, misalnya semua api unggun.
+func positions_of(id: String) -> Array[Vector3]:
+	var result: Array[Vector3] = []
+	for node in _placed:
+		if (node.get_meta("record") as Dictionary).get("tool", "") == id:
+			result.append(node.position)
+	return result
 
 func to_data() -> Array:
 	var result: Array = []
@@ -193,6 +221,8 @@ func build_prop(id: String, file: String, ghost: bool) -> Node3D:
 			_decorate_campfire(node)
 	if ghost:
 		_make_ghost(node)
+	elif id == "tree" or id == "plant":
+		WindSway.apply(node, 1.4 if id == "tree" else 0.4)
 	return node
 
 func _load_scene(file: String) -> PackedScene:
@@ -221,6 +251,7 @@ func _decorate_campfire(node: Node3D) -> void:
 	light.base_energy = 2.6
 	light.omni_range = 7.5
 	light.shadow_enabled = true
+	light.set_meta("night_only", true)
 	node.add_child(light)
 
 	var embers := CPUParticles3D.new()
@@ -246,6 +277,7 @@ func _decorate_campfire(node: Node3D) -> void:
 	var fade := Gradient.new()
 	fade.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 0)])
 	embers.color_ramp = fade
+	embers.set_meta("night_only", true)
 	node.add_child(embers)
 
 ## Lentera dibuat dari primitif: tiang, kap, dan kaca bercahaya.
@@ -264,7 +296,8 @@ func _build_lantern() -> Node3D:
 	var glass_mesh := BoxMesh.new()
 	glass_mesh.size = Vector3(0.1, 0.12, 0.1)
 	glass_mesh.material = _emissive_material(LANTERN_GLASS, 2.5)
-	_add_mesh(root, glass_mesh, Vector3(0.0, 0.62, 0.0))
+	var glass := _add_mesh(root, glass_mesh, Vector3(0.0, 0.62, 0.0))
+	glass.set_meta("night_glow", glass_mesh.material)
 
 	var cap_mesh := CylinderMesh.new()
 	cap_mesh.top_radius = 0.02
@@ -281,6 +314,7 @@ func _build_lantern() -> Node3D:
 	light.light_energy = 1.4
 	light.omni_range = 4.0
 	light.omni_attenuation = 1.4
+	light.set_meta("night_only", true)
 	root.add_child(light)
 	return root
 

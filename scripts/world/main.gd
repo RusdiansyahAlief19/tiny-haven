@@ -1,5 +1,9 @@
 extends Node3D
-## Dunia permainan Tiny Haven (iterasi 4).
+## Dunia permainan Tiny Haven (iterasi 4, ditambah iterasi 5).
+##
+## Iterasi 5 menambahkan siklus siang-malam (day_night_cycle.gd), cuaca
+## hujan dan angin (weather.gd + shader goyangan pohon), tantangan santai
+## (challenges.gd), dan domba yang berkumpul di api unggun saat malam.
 ##
 ## Pemain masuk ke sini dari tombol Mulai atau Lanjutkan di menu utama.
 ## Suasananya disamakan dengan menu: malam ungu, bulan sabit, kunang-kunang,
@@ -8,6 +12,7 @@ extends Node3D
 ## Kontrol lengkap tampil di HUD (scripts/ui/game_hud.gd). Ringkasnya:
 ##   1-9 pilih alat | Klik kiri taruh | Klik kanan selesai tembok / putar
 ##   R putar | Z undo | Shift kunci grid | F5 simpan | Esc jeda
+##   T kecepatan waktu | C ganti cuaca | J daftar tantangan
 ##   Klik tengah + geser putar kamera | Scroll zoom | WASD/Panah geser kamera
 
 const CameraRigScript = preload("res://scripts/world/camera_rig.gd")
@@ -40,15 +45,27 @@ const BUILD_RADIUS := 24.0
 const BORDER_INNER := 27.0
 const BORDER_OUTER := 40.0
 const GRID_STEP := 0.5
+## Dunia baru dimulai menjelang malam supaya lentera langsung menyala.
+const START_HOUR := 19.5
 
 var cam_rig
 var walls
 var placer: PropPlacer
 var hud: GameHud
+var day_night: DayNightCycle
+var weather: Weather
+var challenges := Challenges.new()
+var sheep: Array[Sheep] = []
 
 var _tool_index := 0
 var _cursor: Variant = null
 var _wall_marker: MeshInstance3D
+var _moon: DirectionalLight3D
+var _env: Environment
+var _sky_material: ShaderMaterial
+var _ground_material: StandardMaterial3D
+var _tick: float = 0.0
+var _fireflies: CPUParticles3D
 
 func _ready() -> void:
 	_setup_environment()
@@ -69,10 +86,12 @@ func _ready() -> void:
 		var s = SheepScript.new()
 		s.position = Vector3(randf_range(-10, 10), 0, randf_range(-10, 10))
 		add_child(s)
+		sheep.append(s)
 	var fireflies := FirefliesScript.new()
 	add_child(fireflies)
 	fireflies.emission_box_extents = Vector3(BUILD_RADIUS, 1.5, BUILD_RADIUS)
 	fireflies.amount = 120
+	_fireflies = fireflies
 
 	hud = GameHud.new()
 	add_child(hud)
@@ -84,13 +103,50 @@ func _ready() -> void:
 	hud.save_requested.connect(save_world)
 	hud.menu_requested.connect(_on_menu_requested)
 
+	day_night = DayNightCycle.new()
+	day_night.time_of_day = START_HOUR
+	add_child(day_night)
+	day_night.lights_changed.connect(_on_lights_changed)
+	day_night.new_day.connect(_on_new_day)
+	day_night.setup(_moon, _env, _sky_material, _ground_material)
+
+	weather = Weather.new()
+	weather.follow = cam_rig
+	weather.day_night = day_night
+	add_child(weather)
+	weather.weather_changed.connect(func(label: String) -> void: hud.show_toast("Cuaca: " + label))
+
+	challenges.completed.connect(func(title: String) -> void: hud.show_toast("Tantangan selesai: " + title))
+
 	if GameState.continue_requested and _load_world():
 		hud.show_toast("Dunia dimuat")
 	else:
 		_build_starter_camp()
 		hud.show_toast("Selamat datang di Tiny Haven")
+	if GameState.debug_time >= 0.0:
+		day_night.set_time(GameState.debug_time)
+	if GameState.debug_weather >= 0:
+		weather.auto_change = false
+		weather.set_kind(clampi(GameState.debug_weather, 0, Weather.LABELS.size() - 1) as Weather.Kind)
+		weather.snap_to_target()
 	select_tool(0)
 	_update_stats()
+	_update_world_info()
+
+func _process(delta: float) -> void:
+	_tick -= delta
+	if _tick > 0.0:
+		return
+	_tick = 0.5
+	_update_world_info()
+	_update_sheep()
+	if weather.is_raining():
+		_complete("rain")
+
+func _update_world_info() -> void:
+	var phase := "Malam" if day_night.is_night() else "Siang"
+	hud.set_world_info("%s %s   %s   Waktu %s" % [
+		phase, day_night.clock_text(), weather.label(), day_night.speed_label()])
 
 # --- Suasana malam ----------------------------------------------------------
 
@@ -122,6 +178,8 @@ func _setup_environment() -> void:
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
+	_env = env
+	_sky_material = sky_material
 
 	# Bulan lebih terang daripada di menu supaya pemain tetap bisa membangun.
 	var moon := DirectionalLight3D.new()
@@ -131,6 +189,8 @@ func _setup_environment() -> void:
 	moon.shadow_enabled = true
 	moon.directional_shadow_max_distance = 70.0
 	add_child(moon)
+	# Iterasi 5: cahaya ini dipakai DayNightCycle sebagai bulan sekaligus matahari.
+	_moon = moon
 
 func _setup_ground() -> void:
 	var ground := MeshInstance3D.new()
@@ -141,6 +201,7 @@ func _setup_ground() -> void:
 	mat.roughness = 1.0
 	plane.material = mat
 	ground.mesh = plane
+	_ground_material = mat
 	add_child(ground)
 
 	# Lingkaran tipis penanda batas area bangun.
@@ -180,6 +241,7 @@ func _build_border_forest() -> void:
 		tree.rotation.y = rng.randf() * TAU
 		tree.scale = Vector3.ONE * rng.randf_range(1.0, 1.8)
 		forest.add_child(tree)
+	WindSway.apply(forest, 1.4)
 
 ## Dunia baru tidak kosong: ada api unggun, tenda, dan dua lentera.
 func _build_starter_camp() -> void:
@@ -265,6 +327,12 @@ func _on_key(keycode: Key) -> void:
 			_undo()
 		KEY_F5:
 			save_world()
+		KEY_T:
+			hud.show_toast("Kecepatan waktu: " + day_night.cycle_speed())
+			_update_world_info()
+		KEY_C:
+			weather.cycle_kind()
+			_update_world_info()
 
 ## Undo mengikuti alat yang aktif: tembok untuk alat Tembok, objek untuk lainnya.
 func _undo() -> void:
@@ -275,6 +343,51 @@ func _undo() -> void:
 
 func _update_stats() -> void:
 	hud.set_stats(placer.placed_count, walls.wall_count())
+	challenges.evaluate(placer.to_data(), walls.to_data())
+	_refresh_challenges()
+
+func _refresh_challenges() -> void:
+	var items: Array = []
+	for item in Challenges.LIST:
+		items.append([item["title"], challenges.is_done(item["id"])])
+	hud.set_challenges(items)
+
+func _complete(id: String) -> void:
+	if not challenges.is_done(id):
+		challenges.mark(id)
+		_refresh_challenges()
+
+# --- Siang-malam dan domba --------------------------------------------------
+
+func _on_lights_changed(on: bool) -> void:
+	placer.set_lights(on)
+	# Kunang-kunang hanya muncul saat malam.
+	_fireflies.emitting = on
+	_update_sheep()
+
+func _on_new_day() -> void:
+	hud.show_toast("Selamat pagi!")
+	_complete("night")
+
+## Saat malam, setiap domba menuju api unggun terdekat (kalau ada).
+func _update_sheep() -> void:
+	var fires: Array[Vector3] = []
+	if day_night.is_night():
+		fires = placer.positions_of("campfire")
+	var gathered := 0
+	for s in sheep:
+		var nearest: Variant = null
+		var best := INF
+		for f in fires:
+			var d := s.position.distance_to(f)
+			if d < best:
+				best = d
+				nearest = f
+		s.set_gather_point(nearest)
+		if s.is_gathered():
+			gathered += 1
+	if gathered >= 3:
+		_complete("sheep")
 
 ## Penanda kecil di bawah kursor saat alat Tembok aktif.
 func _update_wall_marker() -> void:
@@ -311,6 +424,10 @@ func save_world() -> void:
 			"pitch": cam_rig.pitch,
 			"dist": cam_rig.dist,
 		},
+		"time": day_night.time_of_day,
+		"time_speed": day_night.speed_index,
+		"weather": weather.kind,
+		"challenges": challenges.to_data(),
 	}
 	if GameState.save_world(data):
 		hud.show_toast("Dunia tersimpan")
@@ -323,6 +440,11 @@ func _load_world() -> bool:
 		return false
 	walls.load_data(data.get("walls", []))
 	placer.load_data(data.get("props", []))
+	challenges.load_data(data.get("challenges", []))
+	day_night.speed_index = clampi(int(data.get("time_speed", 0)), 0, DayNightCycle.SPEEDS.size() - 1)
+	day_night.set_time(float(data.get("time", START_HOUR)))
+	weather.set_kind(clampi(int(data.get("weather", 0)), 0, Weather.LABELS.size() - 1) as Weather.Kind)
+	weather.snap_to_target()
 	var cam: Dictionary = data.get("camera", {})
 	if cam.has("pos"):
 		cam_rig.position = Vector3(cam["pos"][0], cam["pos"][1], cam["pos"][2])

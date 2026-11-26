@@ -30,8 +30,17 @@ jobs:
       - name: Impor aset
         run: ./godot --headless --path . --import
 
-      - name: Tes simpan dan muat dunia
-        run: ./godot --headless --path . --quit-after 1200 -s res://tests/save_load_test.gd
-
-      - name: Tes alur menu dan pengaturan
-        run: ./godot --headless --path . --quit-after 1200 -s res://tests/ui_flow_test.gd
+      - name: Jalankan semua tes
+        run: |
+          status=0
+          for test in tests/*_test.gd; do
+            echo "== $test"
+            ./godot --headless --path . --quit-after 1200 -s "res://$test" 2>&1 | tee log.txt
+            code=${PIPESTATUS[0]}
+            # Gagal kalau tes melapor gagal ATAU ada error skrip di log.
+            if [ "$code" -ne 0 ] || grep -q "SCRIPT ERROR" log.txt; then
+              echo "::error::$test gagal"
+              status=1
+            fi
+          done
+          exit $status

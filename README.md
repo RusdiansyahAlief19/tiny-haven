@@ -4,6 +4,8 @@
 
 Tidak ada musuh, tidak ada misi, tidak ada batas waktu. Kamu cukup menata pohon, tembok batu, tenda, api unggun, dan lentera sesukamu, lalu menikmati cahaya hangat yang menerangi padang malam.
 
+> **Versi terbaru: v0.5 (Iterasi 5)** menambahkan siklus siang-malam, cuaca hujan dan angin, tantangan santai, dan domba yang berkumpul di api unggun. Versi sebelumnya tetap tersedia, lihat [Versi](#versi).
+
 <p align="center">
   <img src="docs/screenshots/menu-utama.png" alt="Menu utama Tiny Haven" width="720">
 </p>
@@ -12,13 +14,21 @@ Tidak ada musuh, tidak ada misi, tidak ada batas waktu. Kamu cukup menata pohon,
   <img src="docs/screenshots/dunia-malam.png" alt="Dunia malam dengan tembok, tenda, api unggun, dan lentera" width="720">
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/siang-berangin.png" alt="Siang hari yang berangin" width="355">
+  <img src="docs/screenshots/malam-hujan.png" alt="Malam hujan dengan lentera menyala" width="355">
+</p>
+
 ---
 
 ## Daftar isi
 - [Cara memainkan](#cara-memainkan)
 - [Kontrol](#kontrol)
 - [Alat bangun](#alat-bangun)
+- [Siang, malam, dan cuaca](#siang-malam-dan-cuaca)
+- [Tantangan santai](#tantangan-santai)
 - [Menu dan pengaturan](#menu-dan-pengaturan)
+- [Versi](#versi)
 - [Untuk pengembang](#untuk-pengembang)
 - [Tim dan kredit](#tim-dan-kredit)
 
@@ -51,6 +61,9 @@ Saat ini Tiny Haven dijalankan langsung dari Godot (belum ada file `.exe`).
 | **W A S D** atau **panah** | Geser kamera |
 | **Klik tengah + geser** | Putar kamera |
 | **Scroll** | Zoom kamera |
+| **T** | Ubah kecepatan waktu (1x, 6x, berhenti) |
+| **C** | Ganti cuaca (cerah, berangin, hujan) |
+| **J** | Tampilkan / sembunyikan daftar tantangan |
 | **F5** | Simpan dunia |
 | **H** | Sembunyikan / tampilkan bantuan |
 | **Esc** | Menu jeda |
@@ -71,6 +84,31 @@ Saat ini Tiny Haven dijalankan langsung dari Godot (belum ada file `.exe`).
 
 Sebelum ditaruh, objek tampil transparan di bawah kursor supaya kamu bisa melihat hasilnya dulu. Kamu hanya bisa membangun di dalam lingkaran tipis berwarna lavender. Di luarnya ada hutan pembatas.
 
+## Siang, malam, dan cuaca
+
+- **Waktu berjalan sendiri.** Satu hari penuh sekitar 5 menit. Dunia baru dimulai menjelang malam (19:30). Jam tampil di kiri atas.
+- **Lampu otomatis.** Saat gelap, lentera dan api unggun menyala sendiri. Saat siang mereka padam.
+- **Cuaca berganti sendiri** setiap 1 sampai 2 menit, atau tekan **C** untuk menggantinya:
+  - *Cerah*: langit bersih, bintang dan bulan terlihat di malam hari.
+  - *Berangin*: pohon dan bunga bergoyang.
+  - *Hujan*: hujan turun, angin bertiup, dan langit lebih gelap.
+- **Domba** berkumpul mengelilingi api unggun terdekat saat malam, lalu berkeliaran lagi saat pagi.
+
+## Tantangan santai
+
+Tantangan ini tidak wajib, tidak punya batas waktu, dan tidak ada kalah. Gunanya sekadar memberi ide kalau kamu bingung mau membangun apa. Tekan **J** untuk melihat daftarnya.
+
+1. Terangi kemah dengan 4 lentera
+2. Tanam hutan kecil: 10 pohon
+3. Nyalakan 2 api unggun
+4. Bangun tembok yang punya pintu (buat satu sisi tembok lebih dari 4 meter)
+5. Kelilingi tenda dengan tembok (titik terakhir tembok harus kembali ke dekat titik awal)
+6. Lewati satu malam sampai pagi
+7. Nikmati hujan di Tiny Haven
+8. Kumpulkan 3 domba di api unggun
+
+Tantangan yang sudah selesai ikut tersimpan bersama dunia.
+
 ## Menu dan pengaturan
 
 - **Mulai**: membuat dunia baru dengan kemah kecil sebagai titik awal.
@@ -79,6 +117,15 @@ Sebelum ditaruh, objek tampil transparan di bawah kursor supaya kamu bisa meliha
 - **Kredit**: tim pembuat dan sumber aset.
 
 Dunia tersimpan otomatis saat kamu kembali ke menu utama lewat menu jeda.
+
+## Versi
+
+| Versi | Isi | Cara memakai |
+|---|---|---|
+| **v0.5** (terbaru, branch `main`) | Siang-malam, cuaca, tantangan, domba bereaksi | Clone biasa |
+| **v0.4** | Menu berfungsi, dunia malam, 9 alat bangun, simpan/muat | `git checkout v0.4` setelah clone, atau unduh dari halaman [Releases](https://github.com/RusdiansyahAlief19/tiny-haven/releases) |
+
+Kembali ke versi terbaru dengan `git checkout main`.
 
 ---
 
@@ -98,8 +145,8 @@ tiny-haven/
 ├── scripts/
 │   ├── core/             Status global (autoload GameState: pengaturan & simpanan)
 │   ├── ui/               Menu, HUD, panel pengaturan, gaya antarmuka bersama
-│   └── world/            Dunia, kamera, tembok, penaruh objek, hewan, efek cahaya
-├── shaders/              Shader langit malam (bintang dan bulan sabit)
+│   └── world/            Dunia, kamera, tembok, objek, siang-malam, cuaca, tantangan, hewan
+├── shaders/              Shader langit (siang/malam, bintang, bulan) dan goyangan angin
 ├── tests/                Tes otomatis yang dijalankan tanpa layar
 ├── docs/                 Tangkapan layar dan aturan kerja tim
 ├── LICENSES.md           Sumber dan lisensi aset
@@ -110,7 +157,10 @@ tiny-haven/
 
 - **Pencahayaan**: cahaya bulan (directional light) dengan bayangan, serta point light dari api unggun dan lentera. Api unggun berkedip memakai dua gelombang sinus.
 - **Shading dan material**: bahan emissive pada kaca lentera dan bara api yang memicu efek glow, serta ghost preview transparan.
-- **Shader**: `shaders/night_sky.gdshader` menggambar gradasi langit, bintang dari fungsi hash, dan bulan sabit dari dua lingkaran yang dikurangkan.
+- **Shader**: `shaders/night_sky.gdshader` menggambar gradasi langit, bintang dari fungsi hash, bulan sabit dari dua lingkaran yang dikurangkan, dan matahari saat siang.
+- **Vertex shader**: `shaders/wind_sway.gdshader` menggoyangkan pohon. Geseran tiap titik naik kuadratik terhadap tingginya, mengikuti gelombang sinus.
+- **Interpolasi warna**: siklus siang-malam mencampur (lerp) warna langit, kabut, cahaya, dan rumput antara palet siang, senja, dan malam berdasarkan tinggi matahari.
+- **Sistem partikel**: hujan (ribuan tetes yang mengikuti kamera dan miring tertiup angin), bara api, dan kunang-kunang.
 - **Geometri prosedural**: tembok disusun dari ribuan batu kotak memakai MultiMesh, dan lentera dibuat dari primitif.
 - **Transformasi**: rotasi, skala acak, dan proyeksi kursor ke bidang tanah (ray casting).
 
@@ -120,6 +170,7 @@ tiny-haven/
 godot --headless --path . --import
 godot --headless --path . -s res://tests/save_load_test.gd
 godot --headless --path . -s res://tests/ui_flow_test.gd
+godot --headless --path . -s res://tests/iteration5_test.gd
 ```
 
 Tes yang sama berjalan otomatis di GitHub Actions setiap ada push (lihat tab **Actions**).
@@ -131,7 +182,7 @@ godot --path . -- --shot=user://menu.png
 godot --path . -- --world --shot=user://dunia.png --frames=120
 ```
 
-Tambahkan `--continue` untuk memotret dunia yang tersimpan. File `user://` ada di `%APPDATA%\Godot\app_userdata\Tiny Haven\` (Windows).
+Tambahkan `--continue` untuk memotret dunia yang tersimpan, `--time=13` untuk mengatur jam, dan `--weather=2` untuk cuaca (0 cerah, 1 berangin, 2 hujan). File `user://` ada di `%APPDATA%\Godot\app_userdata\Tiny Haven\` (Windows).
 
 ---
 

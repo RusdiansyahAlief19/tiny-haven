@@ -6,6 +6,10 @@
 // - Bulan: digambar di arah cahaya bulan (LIGHT0). Bentuk sabit didapat
 //   dari lingkaran penuh dikurangi lingkaran kedua yang sedikit digeser.
 //
+// Iterasi 5: night_factor (0 siang, 1 malam) dari day_night_cycle.gd
+// memudarkan bintang dan bulan, lalu menampilkan matahari saat siang.
+// cloud_cover dari weather.gd meredupkan bintang, bulan, dan matahari.
+//
 // Shader ini sengaja tidak memakai TIME supaya cubemap radiance langit
 // tidak dihitung ulang tiap frame (lebih ringan).
 shader_type sky;
@@ -22,6 +26,11 @@ uniform float star_brightness = 3.0;
 uniform vec3 moon_color : source_color = vec3(1.0, 0.95, 0.82);
 uniform float moon_size : hint_range(0.01, 0.2) = 0.06;
 uniform float moon_energy = 3.0;
+
+uniform float night_factor : hint_range(0.0, 1.0) = 1.0;
+uniform float cloud_cover : hint_range(0.0, 1.0) = 0.0;
+uniform vec3 sun_color : source_color = vec3(1.0, 0.92, 0.75);
+uniform float sun_size : hint_range(0.01, 0.2) = 0.05;
 
 float hash(vec3 p) {
 	p = fract(p * 0.3183099 + 0.1);
@@ -48,7 +57,8 @@ void sky() {
 			float d = distance(center, dir) * star_cells;
 			// Kecerahan tiap bintang berbeda, diambil dari hash yang sama.
 			float glow = smoothstep(0.45, 0.0, d) * (0.4 + 0.6 * fract(n * 37.0));
-			col += vec3(1.0, 0.95, 0.9) * star_brightness * glow * smoothstep(0.0, 0.15, h);
+			col += vec3(1.0, 0.95, 0.9) * star_brightness * glow * smoothstep(0.0, 0.15, h)
+				* night_factor * (1.0 - cloud_cover);
 		}
 	}
 
@@ -61,9 +71,13 @@ void sky() {
 		vec3 shadow_dir = normalize(to_moon + right * moon_size * 0.55 + vec3(0.0, moon_size * 0.25, 0.0));
 		float cover = smoothstep(moon_size * 0.92, moon_size * 0.82, distance(dir, shadow_dir));
 		float crescent = disc * (1.0 - cover);
-		col += moon_color * crescent * moon_energy;
+		float clear = 1.0 - cloud_cover * 0.85;
+		col += moon_color * crescent * moon_energy * night_factor * clear;
 		// Halo lembut di sekitar bulan.
-		col += moon_color * 0.18 * exp(-md * 9.0);
+		col += moon_color * 0.18 * exp(-md * 9.0) * night_factor * clear;
+		// Matahari: cakram bulat dengan cahaya lembut di sekitarnya.
+		float sun = smoothstep(sun_size, sun_size * 0.8, md);
+		col += sun_color * (sun * 4.0 + 0.35 * exp(-md * 6.0)) * (1.0 - night_factor) * clear;
 	}
 
 	COLOR = col;

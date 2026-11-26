@@ -39,6 +39,9 @@ var msaa := 1
 
 ## true kalau pemain menekan Lanjutkan di menu utama.
 var continue_requested := false
+## Dipakai alat tangkapan layar (--time=, --weather=). -1 = tidak diubah.
+var debug_time: float = -1.0
+var debug_weather: int = -1
 
 func _ready() -> void:
 	load_settings()
@@ -49,7 +52,8 @@ func _ready() -> void:
 ## Contoh (jalankan dari folder proyek):
 ##   godot --path . -- --shot=user://menu.png
 ##   godot --path . -- --world --shot=user://dunia.png --frames=90
-## Tambahkan --continue untuk membuka dunia tersimpan.
+## Tambahkan --continue untuk membuka dunia tersimpan, --time=12 untuk
+## mengatur jam, dan --weather=0/1/2 (cerah/berangin/hujan).
 func _handle_capture_args() -> void:
 	var shot := ""
 	var frames := 60
@@ -59,6 +63,12 @@ func _handle_capture_args() -> void:
 			shot = arg.trim_prefix("--shot=")
 		elif arg.begins_with("--frames="):
 			frames = maxi(1, arg.trim_prefix("--frames=").to_int())
+		elif arg.begins_with("--time="):
+			debug_time = arg.trim_prefix("--time=").to_float()
+			open_world = true
+		elif arg.begins_with("--weather="):
+			debug_weather = arg.trim_prefix("--weather=").to_int()
+			open_world = true
 		elif arg == "--world":
 			open_world = true
 		elif arg == "--continue":

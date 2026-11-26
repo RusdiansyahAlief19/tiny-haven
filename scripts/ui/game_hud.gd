@@ -3,7 +3,8 @@ extends CanvasLayer
 ## HUD di dalam dunia permainan Tiny Haven.
 ##
 ## Isi layar:
-##   kiri atas    - judul kecil dan jumlah objek
+##   kiri atas    - judul kecil, jam, cuaca, dan jumlah objek
+##   kiri tengah  - daftar tantangan santai (tombol J)
 ##   kanan atas   - daftar kontrol (tombol H untuk sembunyikan)
 ##   bawah tengah - toolbar alat, tombol angka 1-9 juga bisa dipakai
 ##   tengah atas  - pesan singkat (toast), misalnya "Dunia tersimpan"
@@ -26,12 +27,19 @@ Shift       kunci ke grid
 Tengah+geser  putar kamera
 Scroll      zoom
 WASD/Panah  geser kamera
+T           kecepatan waktu
+C           ganti cuaca
+J           daftar tantangan
 F5          simpan
 H           sembunyikan bantuan
 Esc         jeda"""
 
 var _tool_buttons: Array[Button] = []
 var _stats_label: Label
+var _world_label: Label
+var _challenge_panel: PanelContainer
+var _challenge_list: VBoxContainer
+var _challenge_title: Label
 var _tool_label: Label
 var _controls_panel: PanelContainer
 var _toast: Label
@@ -48,6 +56,7 @@ func build(tool_names: Array[String]) -> void:
 	_build_top_left()
 	_build_controls()
 	_build_toolbar(tool_names)
+	_build_challenges()
 	_build_toast()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -59,6 +68,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_pause()
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_H and not is_paused():
 		_controls_panel.visible = not _controls_panel.visible
+	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_J and not is_paused():
+		_challenge_panel.visible = not _challenge_panel.visible
 
 # --- Bagian HUD -------------------------------------------------------------
 
@@ -85,6 +96,11 @@ func _build_top_left() -> void:
 	_tool_label.add_theme_color_override("font_outline_color", UiTheme.OUTLINE)
 	_tool_label.add_theme_constant_override("outline_size", 4)
 	box.add_child(_tool_label)
+
+	_world_label = UiTheme.label("", 16, UiTheme.CREAM)
+	_world_label.add_theme_color_override("font_outline_color", UiTheme.OUTLINE)
+	_world_label.add_theme_constant_override("outline_size", 4)
+	box.add_child(_world_label)
 
 	_stats_label = UiTheme.label("", 16, UiTheme.LAVENDER)
 	_stats_label.add_theme_color_override("font_outline_color", UiTheme.OUTLINE)
@@ -135,6 +151,20 @@ func _build_toolbar(tool_names: Array[String]) -> void:
 		bar.add_child(slot)
 		_tool_buttons.append(button)
 
+## Panel tantangan di kiri, di bawah judul. Tombol J untuk sembunyikan.
+func _build_challenges() -> void:
+	_challenge_panel = PanelContainer.new()
+	_challenge_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_challenge_panel.add_theme_stylebox_override("panel", UiTheme.plate_style(UiTheme.PLATE, UiTheme.TEAL, 2, 0.78, 14.0))
+	_challenge_panel.position = Vector2(16.0, 150.0)
+	add_child(_challenge_panel)
+
+	_challenge_list = VBoxContainer.new()
+	_challenge_list.add_theme_constant_override("separation", 4)
+	_challenge_panel.add_child(_challenge_list)
+	_challenge_title = UiTheme.label("Tantangan santai", 16, UiTheme.TEAL)
+	_challenge_list.add_child(_challenge_title)
+
 func _build_toast() -> void:
 	_toast = UiTheme.label("", 24, UiTheme.CREAM)
 	_toast.add_theme_color_override("font_outline_color", UiTheme.OUTLINE)
@@ -152,6 +182,24 @@ func set_selected_tool(index: int, description: String) -> void:
 	for i in _tool_buttons.size():
 		UiTheme.set_button_selected(_tool_buttons[i], i == index, TOOLBAR_MARGIN)
 	_tool_label.text = description
+
+func set_world_info(text: String) -> void:
+	_world_label.text = text
+
+## items: daftar [judul, selesai].
+func set_challenges(items: Array) -> void:
+	for child in _challenge_list.get_children():
+		if child != _challenge_title:
+			child.queue_free()
+	var done := 0
+	for item in items:
+		var finished: bool = item[1]
+		if finished:
+			done += 1
+		var line := UiTheme.label(("[x] " if finished else "[ ] ") + str(item[0]), 16,
+			UiTheme.TEAL if finished else UiTheme.CREAM)
+		_challenge_list.add_child(line)
+	_challenge_title.text = "Tantangan santai  %d/%d" % [done, items.size()]
 
 func set_stats(prop_count: int, wall_count: int) -> void:
 	_stats_label.text = "Objek: %d   Tembok: %d" % [prop_count, wall_count]
