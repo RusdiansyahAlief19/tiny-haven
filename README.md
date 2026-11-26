@@ -80,7 +80,7 @@ Saat ini Tiny Haven dijalankan langsung dari Godot (belum ada file `.exe`).
 | 6 | Tenda | Tenda kemah. |
 | 7 | Api | Api unggun dengan cahaya berkedip dan percikan bara. |
 | 8 | Lentera | Lampu kecil bercahaya hangat. |
-| 9 | Hapus | Klik objek di dalam lingkaran merah untuk menghapusnya. |
+| 9 | Hapus | Klik objek atau tembok di dalam lingkaran merah untuk menghapusnya. Satu klik pada tembok menghapus tembok itu seluruhnya. |
 
 Sebelum ditaruh, objek tampil transparan di bawah kursor supaya kamu bisa melihat hasilnya dulu. Kamu hanya bisa membangun di dalam lingkaran tipis berwarna lavender. Di luarnya ada hutan pembatas.
 

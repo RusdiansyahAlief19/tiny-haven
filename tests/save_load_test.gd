@@ -27,6 +27,17 @@ func _run() -> void:
 	scene.walls.commit()
 	scene.select_tool(8)
 	var erased: bool = scene.placer.erase_at(Vector3(3.3, 0, 3.1))
+	# Tembok kedua lalu dihapus dengan alat Hapus (klik dekat sisinya).
+	scene.select_tool(0)
+	scene.walls.add_point(Vector3(-8, 0, 6))
+	scene.walls.add_point(Vector3(-2, 0, 6))
+	scene.walls.commit()
+	var walls_before: int = scene.walls.wall_count()
+	scene.select_tool(8)
+	scene._on_left_click(Vector3(-5, 0, 6.4))
+	var wall_erased: bool = scene.walls.wall_count() == walls_before - 1
+	print("tembok terhapus=", wall_erased)
+	erased = erased and wall_erased
 	scene.save_world()
 	var props_saved: int = scene.placer.placed_count
 	scene.queue_free()

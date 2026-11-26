@@ -45,6 +45,31 @@ func commit() -> void:
 	points.clear()
 	_mmi = null
 
+## Hapus satu tembok utuh yang salah satu sisinya paling dekat ke titik klik.
+## Mengembalikan false kalau tidak ada tembok dalam jarak radius.
+func erase_near(p: Vector3, radius: float) -> bool:
+	commit()
+	var target := Vector2(p.x, p.z)
+	var best := -1
+	var best_dist := radius
+	for i in _finished.size():
+		var wall := _finished[i]
+		for j in wall.size() - 1:
+			var a := Vector2(wall[j].x, wall[j].z)
+			var b := Vector2(wall[j + 1].x, wall[j + 1].z)
+			var d := target.distance_to(Geometry2D.get_closest_point_to_segment(target, a, b))
+			if d < best_dist:
+				best_dist = d
+				best = i
+	if best < 0:
+		return false
+	_finished.remove_at(best)
+	var node: Node = _finished_nodes[best]
+	_finished_nodes.remove_at(best)
+	if node:
+		node.queue_free()
+	return true
+
 func wall_count() -> int:
 	return _finished.size() + (1 if points.size() >= 2 else 0)
 

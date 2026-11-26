@@ -31,7 +31,7 @@ const TOOLS: Array[Dictionary] = [
 	{"id": "tent", "name": "Tenda", "desc": "Tenda kemah"},
 	{"id": "campfire", "name": "Api", "desc": "Api unggun: sumber cahaya hangat yang berkedip"},
 	{"id": "lantern", "name": "Lentera", "desc": "Lentera: cahaya lembut untuk jalan setapak"},
-	{"id": "erase", "name": "Hapus", "desc": "Hapus: klik objek di dalam lingkaran merah"},
+	{"id": "erase", "name": "Hapus", "desc": "Hapus: klik objek atau tembok di dalam lingkaran merah"},
 ]
 
 # Palet dari assets/icon/icon-game.png (sama dengan menu_world.gd)
@@ -310,8 +310,9 @@ func _on_left_click(p: Variant) -> void:
 		"wall":
 			walls.add_point(p)
 		"erase":
-			if not placer.erase_at(p):
-				hud.show_toast("Tidak ada objek di situ")
+			# Objek didahulukan; kalau tidak ada, coba hapus tembok terdekat.
+			if not placer.erase_at(p) and not walls.erase_near(p, PropPlacer.ERASE_RADIUS):
+				hud.show_toast("Tidak ada objek atau tembok di situ")
 		_:
 			placer.place(p)
 	_update_stats()
