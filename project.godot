@@ -11,5 +11,11 @@ config_version=5
 [application]
 
 config/name="Tiny Haven"
+config/description="Tiny Haven: A Cozy Miniature World Builder"
+run/main_scene="res://scenes/ui/main_menu.tscn"
 config/features=PackedStringArray("4.7")
-config/icon="res://assets/icon-game.svg"
+config/icon="res://assets/icon/icon-game.png"
+
+[autoload]
+
+GameState="*res://scripts/game_state.gd"

@@ -3,6 +3,7 @@ class_name WallBuilder
 # Tembok prosedural: tiap segmen disusun dari batu acak (MultiMesh).
 # Segmen yang cukup panjang otomatis dapat lubang pintu di tengah.
 # Batu di baris atas sebagian berwarna hijau (efek ivy).
+# Iterasi 4: tembok yang sudah selesai dicatat supaya bisa disimpan dan di-undo.
 
 const ROW_H := 0.22
 const ROWS := 6
@@ -13,20 +14,63 @@ const DOOR_ROWS := 4
 var points: Array[Vector3] = []
 var _mmi: MultiMeshInstance3D
 var _rng := RandomNumberGenerator.new()
+# Tembok yang sudah selesai: titik-titiknya (untuk disimpan) dan node-nya (untuk dihapus).
+var _finished: Array[PackedVector3Array] = []
+var _finished_nodes: Array[Node] = []
 
 func add_point(p: Vector3) -> void:
 	points.append(p)
 	_rebuild()
 
-func undo() -> void:
+## Hapus titik terakhir. Kalau tembok yang sedang dibuat sudah kosong,
+## tembok terakhir yang sudah selesai ikut dihapus.
+func undo() -> bool:
 	if points.size() > 0:
 		points.pop_back()
 		_rebuild()
+		return true
+	if _finished.size() > 0:
+		_finished.pop_back()
+		var node: Node = _finished_nodes.pop_back()
+		if node:
+			node.queue_free()
+		return true
+	return false
 
 func commit() -> void:
 	# Selesaikan tembok saat ini, mulai tembok baru.
+	if points.size() >= 2 and _mmi:
+		_finished.append(PackedVector3Array(points))
+		_finished_nodes.append(_mmi)
 	points.clear()
 	_mmi = null
+
+func wall_count() -> int:
+	return _finished.size() + (1 if points.size() >= 2 else 0)
+
+## Data tembok untuk disimpan: daftar tembok, tiap tembok daftar titik [x, y, z].
+func to_data() -> Array:
+	var result: Array = []
+	var all_walls := _finished.duplicate()
+	if points.size() >= 2:
+		all_walls.append(PackedVector3Array(points))
+	for wall in all_walls:
+		var pts: Array = []
+		for p in wall:
+			pts.append([snappedf(p.x, 0.001), snappedf(p.y, 0.001), snappedf(p.z, 0.001)])
+		result.append(pts)
+	return result
+
+func load_data(data: Array) -> void:
+	for wall in data:
+		if not wall is Array:
+			continue
+		points.clear()
+		for p in wall:
+			if p is Array and p.size() == 3:
+				points.append(Vector3(p[0], p[1], p[2]))
+		_rebuild()
+		commit()
 
 func _rebuild() -> void:
 	if _mmi:

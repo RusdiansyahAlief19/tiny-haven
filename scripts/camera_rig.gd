@@ -30,5 +30,11 @@ func _unhandled_input(e: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	var v := Vector3(Input.get_axis("ui_left", "ui_right"), 0, Input.get_axis("ui_up", "ui_down"))
+	# Iterasi 4: WASD juga bisa dipakai selain tombol panah.
+	v.x += float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A))
+	v.z += float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W))
 	if v != Vector3.ZERO:
-		position += v.rotated(Vector3.UP, yaw) * 8.0 * delta
+		position += v.limit_length(1.0).rotated(Vector3.UP, yaw) * 8.0 * delta
+		# Kamera tidak boleh keluar terlalu jauh dari area bangun.
+		var flat := Vector2(position.x, position.z).limit_length(30.0)
+		position = Vector3(flat.x, position.y, flat.y)
