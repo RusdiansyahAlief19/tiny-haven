@@ -36,7 +36,15 @@ Tidak ada musuh, tidak ada misi, tidak ada batas waktu. Kamu cukup menata pohon,
 
 ## Cara memainkan
 
-Saat ini Tiny Haven dijalankan langsung dari Godot (belum ada file `.exe`).
+### Cara termudah (Windows, tanpa Godot)
+
+1. Buka halaman [Releases](https://github.com/RusdiansyahAlief19/tiny-haven/releases/latest).
+2. Unduh file **TinyHaven-...-windows.zip**, lalu ekstrak.
+3. Jalankan **TinyHaven.exe**.
+
+Mau membagikan versi browser lewat itch.io? Lihat [docs/DEPLOY.md](docs/DEPLOY.md).
+
+### Lewat Godot (untuk mengubah atau mengembangkan game)
 
 1. **Unduh Godot 4.7.2** (versi standar, bukan .NET) dari [godotengine.org](https://godotengine.org/download/archive/4.7.2-stable/).
 2. **Unduh proyek ini.** Paling mudah pakai Git (perlu [Git LFS](https://git-lfs.com) karena ada model 3D):
@@ -122,7 +130,9 @@ Dunia tersimpan otomatis saat kamu kembali ke menu utama lewat menu jeda.
 
 | Versi | Isi | Cara memakai |
 |---|---|---|
-| **v0.5** (terbaru, branch `main`) | Siang-malam, cuaca, tantangan, domba bereaksi | Clone biasa |
+| **v0.5.2** (terbaru, branch `main`) | Siap dimainkan: ada file .exe dan versi web di Releases | Unduh dari Releases, atau clone biasa |
+| **v0.5.1** | Perbaikan: alat Hapus bisa menghapus tembok | `git checkout v0.5.1` |
+| **v0.5** | Siang-malam, cuaca, tantangan, domba bereaksi | `git checkout v0.5` |
 | **v0.4** | Menu berfungsi, dunia malam, 9 alat bangun, simpan/muat | `git checkout v0.4` setelah clone, atau unduh dari halaman [Releases](https://github.com/RusdiansyahAlief19/tiny-haven/releases) |
 
 Kembali ke versi terbaru dengan `git checkout main`.
@@ -148,7 +158,7 @@ tiny-haven/
 │   └── world/            Dunia, kamera, tembok, objek, siang-malam, cuaca, tantangan, hewan
 ├── shaders/              Shader langit (siang/malam, bintang, bulan) dan goyangan angin
 ├── tests/                Tes otomatis yang dijalankan tanpa layar
-├── docs/                 Tangkapan layar dan aturan kerja tim
+├── docs/                 Tangkapan layar, panduan deploy, aturan kerja tim
 ├── LICENSES.md           Sumber dan lisensi aset
 └── project.godot
 ```
